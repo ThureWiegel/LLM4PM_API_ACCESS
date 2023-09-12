@@ -9,10 +9,14 @@ def gpt3_chat(message):
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "user", "content": message},
+            {
+                "role": "user",
+                "content": message
+            },
         ]
     )
 
     result = response['choices'][0]['message']['content'].strip()
+    tokens = response['usage']['total_tokens']
 
-    return result
+    return result, tokens
