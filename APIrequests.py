@@ -9,29 +9,17 @@ def gpt_classifier(message):
     function = [
         {
             "name": "classify_Email",
-            "description": "gets the datetime, subject company and subject object from the email",
+            "description": "gets the company and topic mentioned in the email's subject line",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "datetime": {
-                        "type": "string",
-                        "description": "the datetime of the email."
-                                       "format like this: 2021-01-01 00:00:00."
-                                       "If no datetime is found, return 'none'"
-                    },
                     "company": {
                         "type": "string",
-                        "description": "If no company is found, return 'none'"
-                                       "the company mentioned in the subject line, usually formatted like: XX for company YY."
-                                       ""
-                                       "always return company"
+                        "description": "the company mentioned in the emails subject line"
                     },
-                    "object": {
+                    "topic": {
                         "type": "string",
-                        "description": "If no object is found, return 'none'."
-                                       "the object mentioned in the subject line, usually formatted like: object XX for company YY."
-                                       ""
-                                       "always return object"
+                        "description": "the topic mentioned in the emails subject line"
                     }
                 }
             }
@@ -47,10 +35,14 @@ def gpt_classifier(message):
             },
             {
                 "role": "user",
-                "content": f"Here is an email: {message}, please return the datetime, subject company and subject object from the email."
+                "content": f"Here is an email: {message}"
+                           f"From the subject line, extract the company talked about and the topic talked about."
+                           f"Limit you analysis to just the subject line, do not read the body of the email."
+                           f"Provide just the answers, no other text"
             }
         ],
         functions=function,
+        function_call={"name": "classify_Email"}
     )
 
     result = response['choices'][0]['message']['function_call']['arguments']
@@ -60,7 +52,7 @@ def gpt_classifier(message):
 
     # print(json_result)
 
-    return json_result["datetime"], json_result["company"], json_result["object"], tokens
+    return json_result["company"], json_result["topic"], tokens
 
 
 def gpt_extractor(message):
@@ -101,6 +93,7 @@ def gpt_extractor(message):
             }
         ],
         functions=function,
+        function_call={"name": "email_summarizer"}
     )
 
     result = response['choices'][0]['message']['function_call']['arguments']
@@ -114,3 +107,29 @@ def gpt_extractor(message):
     # print(json_result)
 
     return json_result["summarization"], tokens
+
+
+def gpt_entryComparer(company1, object1, company2, object2):
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {
+                "role": "system",
+                "content": "You compare two different email subject lines and return whether they belong to the same email chain or not"
+            },
+            {
+                "role": "user",
+                "content": f"Below are the email subject company and object from two emails:"
+                           f"Email 1: {company1} - {object1}"
+                           f"Email 2: {company2} - {object2}"
+                           f"Do these emails regard the sam company and product?"
+                           f"Return just TRUE or FALSE as your answer"
+            }
+        ],
+    )
+
+    result = response['choices'][0]['message']['content']
+
+    tokens = response['usage']['total_tokens']
+
+    return result, tokens
