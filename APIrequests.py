@@ -36,8 +36,10 @@ def gpt_classifier(message):
             {
                 "role": "user",
                 "content": f"Here is an email: {message}"
-                           f"From the subject line, extract the company talked about and the topic talked about."
-                           f"Limit you analysis to just the subject line, do not read the body of the email."
+                           f"From just the subject line, extract the company talked about and the topic talked about."
+                           f"Limit you analysis to just the text of subject line, do not read the body of the email."
+                           f"The subject line you have to analyse is usually formatted like this:"
+                           f"'Subject:' subject line text"
                            f"Provide just the answers, no other text"
             }
         ],
@@ -55,43 +57,77 @@ def gpt_classifier(message):
     return json_result["company"], json_result["topic"], tokens
 
 
-def gpt_extractor(message):
+def gpt_extractor(message, context):
     function = [
         {
             "name": "email_summarizer",
-            "description": "give a summary of each relevant point talked about in the email",
+            "description": "give a summary of each relevant point and technical aspect talked about in the email",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "summarization": {
                         "type": "string",
-                        "description": "summarization"
-                                       "formatted like this: "
-                                       "1. talking point 1"
-                                       "2. talking point 2"
-                                       "3. talking point 3"
-                                       "..."
-                                       "If no talking points are found, return 'none'"
-                                       "disregard talking points that is not relevant to the subject company and subject object"
-                                       "disregard talking points that directly regard the email itself"
+                        "description": "a bullet point list of the main talking points and technical specifications from the email."
+                                       "split into general talking points and technical specifications."
                     }
                 }
             }
         }
     ]
 
+    contextMessages = [
+        {
+            "role": "assistant",
+            "content": f"{context}"
+        },
+        {
+            "role": "system",
+            "content": "You are a email summarizer."
+        },
+        {
+            "role": "user",
+            "content": f"You are an email summarizer. Here is an email:"
+                       f"{message}."
+                       f"Return all main talking points from the emails body as a bullet point list."
+                       f"Preface every talking point with the person saying/addressed by the talking point."
+                       f"Disregard formalities and signatures."
+                       f"Group general talking points and technical information."
+                       f"Return just the list."
+                       f"Follow this bullet point list schema:"
+                       f""
+                       f"Talking points:"
+                       f"- person x says ..."
+                       f"- person x says ..."
+                       f"- etc."
+                       f"Technical Specifications:"
+                       f"- Specification x"
+                       f"- Specification y"
+                       f"- etc."
+                       f""
+                       f"If you do not have context about previous summarizations, return just the information as bullet point list."
+                       f"If you do have context for previous summarizations, does the summarized talking points and technical specifications fit the previous context?"
+                       f"If it does fit previous context, return the information using the given schema."
+                       f"If it does not fit previous context add or update to the information following the given schema."
+                       f"Add information if it is new and does not fit the previous context."
+                       f"Update information that was mentioned in previous context."
+                       f"Make sure to exactly follow this schema to return the information:"
+                       f""
+                       f"Talking points:"
+                       f"- person x says ..."
+                       f"- person x says ..."
+                       f"- etc"
+                       f"Technical Specifications:"
+                       f"- Specification x"
+                       f"- Specification y" 
+                       f"- etc."
+                       f""
+                       f"Again just return just the information, no other text."
+        },
+    ]
+
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a email analyser. You are given an email and reliably filter out information within it."
-            },
-            {
-                "role": "user",
-                "content": f"Here is an email: {message}. Please summarize each talking point in the email separately"
-            }
-        ],
+        messages=contextMessages,
         functions=function,
         function_call={"name": "email_summarizer"}
     )
