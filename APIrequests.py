@@ -133,6 +133,8 @@ def gpt_extractorNew(message):
     # print(json_result)
 
     return json_result["summarization"], tokens
+
+
 def gpt_extractorAdd(message, context):
     function = [
         {

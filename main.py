@@ -28,13 +28,16 @@ for count, file in enumerate(os.listdir(processedDir)):
 
     time.sleep(0.5)
 
-    while classifierResult[0] == "" or classifierResult[1] == "" or classifierResult[0] is None or classifierResult[
-        1] is None:
+    # classifierResult[0] == "" or classifierResult[1] == "" or classifierResult[0] is None or classifierResult[
+    #     1] is None:
+
+    while classifierResult[0] in ["", None] or classifierResult[1] in ["", None]:
         classifierResult = (
             APIrequests.gpt_classifier(currentFile))
         time.sleep(0.5)
 
-    mycursor.execute("SELECT id, company, object, extractedInfo from llm4pm.emaildata")
+    # extract info from eamils already in DB
+    mycursor.execute("SELECT id, company, object from llm4pm.emaildata")
 
     sqlresult = mycursor.fetchall()
 
