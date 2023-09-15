@@ -22,6 +22,8 @@ mycursor = mydb.cursor()
 
 for count, file in enumerate(os.listdir(processedDir)):
 
+    currentFile = str(open(processedDir + '/' + file, 'r', encoding='utf-8').read())
+
     classifierResult = (APIrequests.gpt_classifier(str(open(processedDir + '/' + file, 'r', encoding='utf-8').read())))
 
     time.sleep(0.5)
@@ -29,7 +31,7 @@ for count, file in enumerate(os.listdir(processedDir)):
     while classifierResult[0] == "" or classifierResult[1] == "" or classifierResult[0] is None or classifierResult[
         1] is None:
         classifierResult = (
-            APIrequests.gpt_classifier(str(open(processedDir + '/' + file, 'r', encoding='utf-8').read())))
+            APIrequests.gpt_classifier(currentFile))
         time.sleep(0.5)
 
     mycursor.execute("SELECT id, company, object, extractedInfo from llm4pm.emaildata")
@@ -48,27 +50,18 @@ for count, file in enumerate(os.listdir(processedDir)):
         comparisonResult = str2bool(
             APIrequests.gpt_entryComparer(x[1], x[2], classifierResult[0], classifierResult[1])[0])
 
-        if not comparisonResult:  # FALSE
+        if not comparisonResult:  # FALSE, no match found
             continue
 
-        else:  # TRUE
-            print("match found: " + file)
-            # print("id: " + str(x[0]))
+        else:  # TRUE, match found
             match = True
             matchID = x[0]
+            continue
 
     # when no existing entry is found, store email information in DB (subject company/object and extracted info)
     if not match:
-        # empty / null context
-        context = ""
-        extractedInfo = APIrequests.gpt_extractor(str(open(processedDir + '/' + file, 'r', encoding='utf-8').read()),context)
-        # cleanedExtractedInfoList = extractedInfo[0].split("\n")
-        # print(cleanedExtractedInfoList)
-        # # join list into string
-        # cleanedExtractedInfo = ""
-        # for line in cleanedExtractedInfoList:
-        #     cleanedExtractedInfo += line.strip()
-        # print(cleanedExtractedInfo)
+        # Extract new info without context
+        extractedInfo = APIrequests.gpt_extractorNew(currentFile)
 
         sql = "INSERT INTO llm4pm.emaildata (company, object, extractedInfo) VALUES (%s, %s, %s)"
         val = (classifierResult[0], classifierResult[1], extractedInfo[0])
@@ -81,12 +74,19 @@ for count, file in enumerate(os.listdir(processedDir)):
     if match:
         # get existing extracted info for use as context
         mycursor.execute("SELECT extractedInfo from llm4pm.emaildata WHERE id = " + str(matchID))
-        ContextInfo = mycursor.fetchone()
+        contextInfo = mycursor.fetchone()
+        #
+        # # Extract new info with context and update existing entry
+        # extractedInfo = APIrequests.gpt_extractorAdd(currentFile, contextInfo)
+        #
+        # sql = "UPDATE llm4pm.emaildata set extractedInfo = %s WHERE id = %s"
+        # val = (extractedInfo[0], matchID)
+        # mycursor.execute(sql, val)
+        # mydb.commit
 
-        # Extract new info with context
-        extractedInfo = APIrequests.gpt_extractor(str(open(processedDir + '/' + file, 'r', encoding='utf-8').read()), ContextInfo)
+        extractedInfo = APIrequests.gpt_extractorNew(currentFile)
 
-        sql = "UPDATE llm4pm.emaildata set extractedInfo = %s WHERE id = %s"
-        val = (extractedInfo[0], matchID)
+        sql = "INSERT INTO llm4pm.emaildata (company, object, extractedInfo) VALUES (%s, %s, %s)"
+        val = (classifierResult[0], classifierResult[1], extractedInfo[0])
         mycursor.execute(sql, val)
         mydb.commit()
