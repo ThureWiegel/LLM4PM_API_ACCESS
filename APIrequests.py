@@ -67,7 +67,7 @@ def gpt_extractorNew(message):
                 "properties": {
                     "summarization": {
                         "type": "string",
-                        "description":  "a bullet point list of the main talking points and technical specifications from the email."
+                        "description":  "returns a bullet point list of the main talking points and technical specifications from the email."
                                         "split into general talking points and technical specifications."
                                         "follows this schema:"
                                         ""
@@ -97,7 +97,7 @@ def gpt_extractorNew(message):
             "content": f"You are an email summarizer. Here is an email:"
                        f"{message}."
                        f"Summarize and return all talking points from the emails body as a bullet point list."
-                       f"Follow this bullet point list schema:"
+                       f"Follow this schema:"
                        f""
                        f"Talking points:"
                        f"- person x says ..."
@@ -110,7 +110,7 @@ def gpt_extractorNew(message):
                        f"- etc."
                        f""
                        f"Disregard formalities and signatures."
-                       f"Group general talking points and technical information."
+                       f"If no talking point or specification can be found, return none in the schema."
                        f"Return just the list, no other text."
         },
     ]
@@ -147,7 +147,7 @@ def gpt_extractorAdd(message, context):
                         "type": "string",
                         "description":  "a bullet point list of the main talking points and technical specifications from the email."
                                         "split into general talking points and technical specifications."
-                                        "Added to the context of previous summarizations."
+                                        ""
                                         "follows this schema:"
                                         ""
                                         "Talking points:"
@@ -169,7 +169,8 @@ def gpt_extractorAdd(message, context):
     Messages = [
         {
             "role": "assistant",
-            "content": f"{context}"
+            "content": f"The previous emails summarization:"
+                       f"{context}"
         },
         {
             "role": "system",
@@ -179,23 +180,22 @@ def gpt_extractorAdd(message, context):
             "role": "user",
             "content": f"You are an email summarizer. Here is an email:"
                        f"{message}."
-                       f"Make sure to exactly follow this schema to return the information:"
+                       f"Taking the previous responses as context, summarize and return all talking points from the emails body as a bullet point list."
+                       f"If information is already in the context, add the context information to the information from the emmail."
+                       f"Follow this bullet point list schema:"
                        f""
                        f"Talking points:"
                        f"- person x says ..."
                        f"- person x says ..."
-                       f"- etc"
+                       f"- etc."
                        f""
                        f"Technical Specifications:"
                        f"- Specification x"
-                       f"- Specification y" 
+                       f"- Specification y"
                        f"- etc."
                        f""
-                       f"Summarize the email and return all main talking points and technical specifications from the emails body as a bullet point list."
-                       f"Update information that was mentioned in previous context."
                        f"Disregard formalities and signatures."
-                       f""
-                       f"Again just return just the information, no other text."
+                       f"Return just the list, no other text."
         },
     ]
 
@@ -219,7 +219,7 @@ def gpt_extractorAdd(message, context):
     return json_result["summarization"], tokens
 
 
-def gpt_entryComparer(company1, object1, company2, object2):
+def gpt_entryComparer(company1, topic1, company2, topic2):
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -230,8 +230,8 @@ def gpt_entryComparer(company1, object1, company2, object2):
             {
                 "role": "user",
                 "content": f"Below are the email subject company and object from two emails:"
-                           f"Email 1: {company1} - {object1}"
-                           f"Email 2: {company2} - {object2}"
+                           f"Email 1: {company1} - {topic1}"
+                           f"Email 2: {company2} - {topic2}"
                            f"Do these emails regard the sam company and product?"
                            f"Return just TRUE or FALSE as your answer"
             }
