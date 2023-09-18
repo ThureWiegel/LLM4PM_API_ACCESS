@@ -1,0 +1,35 @@
+ Thomas <
+Sent: Thursday, March 30, 2023 5:16 PM
+To: Jong <
+To: Ning < Hwang < Harvey < Kim <
+Subject: RE: Electrica - new sampling based on 0.5mm material
+
+Hi Johnny,
+
+Thank you for your questions. Please find my answers below:
+
+Toswer Q1:
+
+  *   The initial requirement of S/D 60/40 was a general definition not focused to an application
+  *   Now we try to simulate the etching of an Intel panel (which is strictly confidential and may not mentioned to Electrica)
+  *   Intel requirement are much more tighter:
+     *   Interim quality:                20/10
+     *   Final quality:                     10/5
+  *   Next sampling need the spec of 20/10
+
+Toswer Q2:
+
+  *   Based on my understanding they are quite professional to handle the displays they etch
+  *   Therefore I am confident that they can handle our glasses also professionally
+  *   The first tests they did are processed under conditions which are not clear for me. Therefore it is difficult to judge about this quality.
+  *   The new sampling we plan will have much more clear definition:
+     *   We provide processed glasses with defined quality
+     *   Electrica need to etch down the thickness from 0.5mm to 0.25mm
+     *   We get back all samples and check their quality under defined conditions.
+  *   Therefore it is not necessary to check the existing glasses before.
+  *   Yes, we also will measure then the TTV/Warp etc.
+
+Do you have already the quantity of samples they might need additionally?
+
+Regards Thomas
+

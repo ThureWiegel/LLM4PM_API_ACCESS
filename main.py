@@ -5,7 +5,7 @@ import os
 import mysql.connector
 import time
 
-processedDir = 'D:/Coding Projects/Python/LLM4PM/processed'
+processedDir = 'processedEmails/'
 tokensUsed = 0
 
 mydb = mysql.connector.connect(
