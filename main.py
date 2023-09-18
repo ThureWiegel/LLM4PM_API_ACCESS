@@ -9,10 +9,10 @@ processedDir = 'D:/Coding Projects/Python/LLM4PM/processed'
 tokensUsed = 0
 
 mydb = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="1234",
-    database="llm4pm"
+    host="",
+    user="",
+    password="",
+    database=""
 )
 
 
