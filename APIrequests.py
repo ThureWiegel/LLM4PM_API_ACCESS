@@ -1,5 +1,5 @@
-import openai
 import json
+import openai
 
 API_KEY = open("API KEY", "r").read()
 openai.api_key = API_KEY
@@ -181,7 +181,7 @@ def gpt_extractorAdd(message, context):
             "content": f"You are an email summarizer. Here is an email:"
                        f"{message}."
                        f"Taking the previous responses as context, summarize and return all talking points from the emails body as a bullet point list."
-                       f"If information is already in the context, add the context information to the information from the emmail."
+                       f"If information is already in the context, add the context information to the information from the email."
                        f"Follow this bullet point list schema:"
                        f""
                        f"Talking points:"
