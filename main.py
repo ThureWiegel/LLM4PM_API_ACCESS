@@ -101,14 +101,15 @@ for count, file in enumerate(os.listdir(processedDir)):
         # Extract new info without context
         # extractedInfo = APIrequests.gpt_extractorNew(currentFile)
 
+        filteredInfo = json.dumps(extractedInfo[0])
+
         # update existing entry with new extracted info (overwrites context information)
-        # filteredInfo = json.dumps(extractedInfo[0])
         # sql = "UPDATE llm4pm.emaildata set extractedInfo = %s WHERE id = %s"
         # val = (filteredInfo, matchID)
 
         # insert extracted information in new row, for evaluation purposes
         sql = "INSERT INTO llm4pm.emaildata (company, object, extractedInfo) VALUES (%s, %s, %s)"
-        val = (classifierResult[0], classifierResult[1], extractedInfo[0])
+        val = (classifierResult[0], classifierResult[1], filteredInfo)
 
         mycursor.execute(sql, val)
         mydb.commit()
