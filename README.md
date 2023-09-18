@@ -1,4 +1,4 @@
-- The program hasben provided with filtered and separated test emails. The filtering progam is not needed and unfuctional due to the removal of sensitive filtering keywords. 
+- The program has been provided with filtered and separated test emails. The filtering progam is not needed and unfuctional due to the removal of sensitive filtering keywords. 
 
 - To run the program, a mysql connection has to be created. The login information has to be provided to the
     mysql.connector function.
